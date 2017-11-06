@@ -32,6 +32,8 @@ int inputLength = sizeof(inputString) - 1;
 int encodedLength = Base64.encodedLength(inputLength);
 char brokerAuth[64];
 
+uint32_t incrementer = 0;
+
 void setup() {
   Serial.begin(115200);
   wifiConnect();
@@ -111,6 +113,13 @@ bool connectToBroker() {
 }
 
 bool pingBroker() {
+  incrementer = incrementer + 1;
+  String payload = "{'ping':'pong!', 'count':";
+  payload += incrementer;
+  payload += "}";
+  int len = payload.length();
+  String payloadLen = "";
+  payloadLen += len;
   if (conn.connected()) {
     request(F("POST "));
     request(SHIFTR_TOPIC);
@@ -121,9 +130,10 @@ bool pingBroker() {
     request(F("Authorization: Basic "));
     request(brokerAuth);
     request(F("\r\n"));
-    request(F("Content-Length: 5"));
+    request(F("Content-Length: "));
+    request(payloadLen.c_str());
     request(F("\r\n\r\n"));
-    request(F("ping!"));
+    request(payload.c_str());
     conn.println();
     message(F("Ping sent to broker"));
     return true;

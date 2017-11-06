@@ -6,3 +6,4 @@
 wifi_config.h
 shiftr_config.h
 .vscode
+.vscode/c_cpp_properties.json
