@@ -1,7 +1,7 @@
 #include <MQTT.h>
-#include "cc3k_shiftr_pinger.h"
+#include "cc3k_mqtt_pinger.h"
 #include "wifi_config.h"
-#include "shiftr_config.h"
+#include "mqtt_config.h"
 
 #define Adafruit_CC3000_IRQ   3
 #define Adafruit_CC3000_VBAT  5
@@ -11,7 +11,7 @@ Adafruit_CC3000 cc3k = Adafruit_CC3000(Adafruit_CC3000_CS, Adafruit_CC3000_IRQ, 
 Adafruit_CC3000_Client conn;
 MQTTClient client;
 
-// #define SHIFTR_DEBUG
+// #define MQTT_DEBUG
 
 #define IDLE_TIMEOUT_MS  3000
 
@@ -24,7 +24,7 @@ uint32_t incrementer = 0;
 void setup() {
   Serial.begin(115200);
   wifiConnect();
-  client.begin(SHIFTR_BROKER, conn);
+  client.begin(MQTT_BROKER, conn);
   connectToBroker();
 }
 
@@ -64,7 +64,7 @@ void wifiConnect() {
 }
 
 void connectToBroker() {
-  while(!client.connect("pinger", SHIFTR_USER, SHIFTR_KEY)) {
+  while(!client.connect("pinger", MQTT_USER, MQTT_KEY)) {
     out(".");
     delay(1000);
   }
@@ -77,5 +77,5 @@ void pingBroker() {
   String payload = "{'ping':'pong!', 'count':";
   payload += incrementer;
   payload += "}";
-  client.publish(SHIFTR_TOPIC, payload);
+  client.publish(MQTT_TOPIC, payload);
 }
