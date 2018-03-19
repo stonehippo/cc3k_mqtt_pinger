@@ -6,6 +6,5 @@
 #include "utility/debug.h"
 
 void wifiConnect();
-bool resolveBrokerIP();
-bool connectToBroker();
-bool pingBroker();
+void connectToBroker();
+void pingBroker();

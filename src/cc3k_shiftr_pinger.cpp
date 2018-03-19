@@ -63,7 +63,7 @@ void wifiConnect() {
   message(F("Wifi setup complete"));
 }
 
-bool connectToBroker() {
+void connectToBroker() {
   while(!client.connect("pinger", SHIFTR_USER, SHIFTR_KEY)) {
     out(".");
     delay(1000);
@@ -72,7 +72,7 @@ bool connectToBroker() {
   message("Connected to MQTT broker!");
 }
 
-bool pingBroker() {
+void pingBroker() {
   incrementer = incrementer + 1;
   String payload = "{'ping':'pong!', 'count':";
   payload += incrementer;
