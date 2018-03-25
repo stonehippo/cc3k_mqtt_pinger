@@ -57,3 +57,11 @@ When I first designed this, I tried to use the [Adafruit MQTT library](https://g
 The first successful implementation came when I switched to the [Shiftr](https://shiftr.io) HTTP interface. This let me write HTTP directly using a JSON packet. That was fine, it worked, but it kind of left me wanting, in part because it was a little slow setting up and killing the HTTP connection, and in part because I wanted to use MQTT from the outset.
 
 I've since refactored the code to use [arduino-mqtt](https://github.com/256dpi/arduino-mqtt). Not only is this library stable, it's compatible with any Arduino networking library that uses the `Client` interface. This means that I can port the pinger to other chips with ease. Hooray!
+
+### Connecting to an MQTT broker via IP address does not work
+
+For reasons I haven't yet figured out, it's not possible to connect to an MQTT broker via IP address. The problem isn't in the `arduino-mqtt` library, since it works fine when I've tested it with other WiFi SoCs like the ESP8266 and an IP address (for example, when connecting to a local Mosquitto broker).
+
+I think the issue is in the CC3K driver. I don't think it's smart enough to figure out the resolution on its own, or its API is slightly off compared to `Client`. In my HTTP-based implementation, I was manually handling name resolution with a function called `resolveBrokerIP`, but I killed that when I switched over to the MQTT implementation.
+
+I'll try to figure that out some time, but for now, this firmware will only work with Internet-resolvable hostnames.
