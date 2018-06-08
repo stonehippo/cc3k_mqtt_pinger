@@ -2,6 +2,7 @@
 #include "cc3k_mqtt_pinger.h"
 #include "wifi_config.h"
 #include "mqtt_config.h"
+#include "TimingHelpers.h"
 
 #define Adafruit_CC3000_IRQ   3
 #define Adafruit_CC3000_VBAT  5
@@ -14,10 +15,13 @@ MQTTClient client;
 // #define MQTT_DEBUG
 
 #define IDLE_TIMEOUT_MS  3000
+#define PING_INTERVAL    5000
 
 #define out(m) {Serial.print(m); }
 #define message(m) { Serial.println(m); }
 #define halt(err) { message(err); while(1); }
+
+long timerInterval = 0;
 
 uint32_t incrementer = 0;
 
@@ -30,12 +34,18 @@ void setup() {
 
 void loop() {
   client.loop();
-  if (!client.connected()) {
-    connectToBroker();
-  } else {
-    pingBroker();
+  // ping once every 5 seconds, using a non-blocking timer
+  if (timerInterval == 0) {
+    startTimer(timerInterval);
   }
-  delay(5000); // ping once every 5 seconds
+  if (isTimerExpired(timerInterval, PING_INTERVAL)) {
+    clearTimer(timerInterval); // reset for the next interval
+    if (!client.connected()) {
+      connectToBroker();
+    } else {
+      pingBroker();
+    }
+  }
 }
 
 void wifiConnect() {
