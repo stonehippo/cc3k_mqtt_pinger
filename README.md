@@ -33,7 +33,7 @@ You'll need to put your WiFi connection info in `src/wifi_config.h`.
 ```
 
 
-An example version can be found in [src/example_mqtt_config.h](src/example_wifi_config.h)
+An example version can be found in [src/example_wifi_config.h](src/example_wifi_config.h)
 
 ### mqtt_config.h
 
@@ -54,7 +54,7 @@ An example version can be found in [src/example_mqtt_config.h](src/example_mqtt_
 
 When I first designed this, I tried to use the [Adafruit MQTT library](https://github.com/adafruit/Adafruit_MQTT_Library). Unfortunately, they discontinued support for the CC3000. This is understandable, since it's not a great SoC, but I still have a couple of them around that I wanted to use. I tried an older version of the library that should have worked, but it wasn't very stable, and I kept having issues connecting. I've found that this library works well with other supported chips, like the ESP8266, so I was sad that it didn't work out here.
 
-The first successful implementation came when I switched to the [Shiftr](https://shiftr.io) HTTP interface. This let me write HTTP directly using a JSON packet. That was fine, it worked, but it kind of left me wanting, in part because it was a little slow setting up and killing the HTTP connection, and in part because I wanted to use MQTT from the outset.
+The first successful implementation came when I switched to the [Shiftr](https://shiftr.io) HTTP interface. This let me write HTTP directly using a JSON packet. That was fine, it worked, but it kind of left me wanting, in part because it was a little slow setting up and killing the HTTP connection, and in part because I wanted to use MQTT from the outset. Using the HTTP interface of a given service meant the implementation was tied to that API. Yuck.
 
 I've since refactored the code to use [arduino-mqtt](https://github.com/256dpi/arduino-mqtt). Not only is this library stable, it's compatible with any Arduino networking library that uses the `Client` interface. This means that I can port the pinger to other chips with ease. Hooray!
 
