@@ -4,3 +4,4 @@
 // Key portion of the same shiftr.io or other MQTT broker full access token
 #define MQTT_KEY    "...shiftr.io token key..."
 #define MQTT_TOPIC  "feeds/ping"
+#define MQTT_PING_INTERVAL 5000

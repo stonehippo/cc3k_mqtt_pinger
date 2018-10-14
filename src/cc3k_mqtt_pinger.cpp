@@ -15,7 +15,6 @@ MQTTClient client;
 // #define MQTT_DEBUG
 
 #define IDLE_TIMEOUT_MS  3000
-#define PING_INTERVAL    5000
 
 #define out(m) {Serial.print(m); }
 #define message(m) { Serial.println(m); }
@@ -38,7 +37,7 @@ void loop() {
   if (timerInterval == 0) {
     startTimer(timerInterval);
   }
-  if (isTimerExpired(timerInterval, PING_INTERVAL)) {
+  if (isTimerExpired(timerInterval, MQTT_PING_INTERVAL)) {
     clearTimer(timerInterval); // reset for the next interval
     if (!client.connected()) {
       connectToBroker();
