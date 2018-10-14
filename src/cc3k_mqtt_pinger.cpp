@@ -33,7 +33,7 @@ void setup() {
 
 void loop() {
   client.loop();
-  // ping once every 5 seconds, using a non-blocking timer
+  // ping once per interval defined in config, using a non-blocking timer
   if (timerInterval == 0) {
     startTimer(timerInterval);
   }
