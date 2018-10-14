@@ -73,7 +73,7 @@ void wifiConnect() {
 }
 
 void connectToBroker() {
-  while(!client.connect("pinger", MQTT_USER, MQTT_KEY)) {
+  while(!client.connect(MQTT_CLIENT_NAME, MQTT_USER, MQTT_KEY)) {
     out(".");
     delay(1000);
   }
