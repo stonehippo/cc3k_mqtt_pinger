@@ -14,7 +14,14 @@ MQTTClient client;
 
 // #define MQTT_DEBUG
 
-#define IDLE_TIMEOUT_MS  3000
+// set defaults for client name and ping interval
+#ifndef MQTT_CLIENT_NAME
+#define MQTT_CLIENT_NAME   "cc3k_pinger"
+#endif
+
+#ifndef MQTT_PING_INTERVAL
+#define MQTT_PING_INTERVAL 5000L
+#endif
 
 #define out(m) {Serial.print(m); }
 #define message(m) { Serial.println(m); }
