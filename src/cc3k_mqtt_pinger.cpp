@@ -23,7 +23,7 @@ MQTTClient client;
 #define MQTT_PING_INTERVAL 5000L
 #endif
 
-#define out(m) {Serial.print(m); }
+#define out(m) { Serial.print(m); }
 #define message(m) { Serial.println(m); }
 #define halt(err) { message(err); while(1); }
 
@@ -46,6 +46,11 @@ void loop() {
   }
   if (isTimerExpired(timerInterval, MQTT_PING_INTERVAL)) {
     clearTimer(timerInterval); // reset for the next interval
+    if (!cc3k.checkConnected) {
+      client.disconnect();
+      message(F("CC3000 is not connected"));
+      wifiConnect();
+    }
     if (!client.connected()) {
       connectToBroker();
     } else {
