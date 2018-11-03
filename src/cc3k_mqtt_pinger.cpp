@@ -46,7 +46,7 @@ void loop() {
   }
   if (isTimerExpired(timerInterval, MQTT_PING_INTERVAL)) {
     clearTimer(timerInterval); // reset for the next interval
-    if (!cc3k.checkConnected) {
+    if (!cc3k.checkConnected()) {
       client.disconnect();
       message(F("CC3000 is not connected"));
       wifiConnect();
