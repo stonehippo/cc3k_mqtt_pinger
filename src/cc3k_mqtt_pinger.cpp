@@ -36,9 +36,11 @@ void setup() {
   wifiConnect();
   client.begin(MQTT_BROKER, conn);
   connectToBroker();
+  sendStatusToBroker("{'status': 'connected to broker'}");
 }
 
 void loop() {
+  bool wasWifiDisconnected = false;
   client.loop();
   // ping once per interval defined in config, using a non-blocking timer
   if (timerInterval == 0) {
@@ -50,9 +52,14 @@ void loop() {
       client.disconnect();
       message(F("CC3000 is not connected"));
       wifiConnect();
+      wasWifiDisconnected = true;
     }
     if (!client.connected()) {
       connectToBroker();
+      if (wasWifiDisconnected) {
+        sendStatusToBroker("{'status: 'reconnected to wifi'}");
+      }
+      sendStatusToBroker("{'status': 'reconnected to broker'}");
     } else {
       pingBroker();
     }
@@ -89,8 +96,11 @@ void connectToBroker() {
     out(".");
     delay(1000);
   }
-
   message("Connected to MQTT broker!");
+}
+
+void sendStatusToBroker(String payload) {
+  client.publish(MQTT_TOPIC, payload);
 }
 
 void pingBroker() {

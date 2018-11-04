@@ -7,4 +7,5 @@
 
 void wifiConnect();
 void connectToBroker();
+void sendStatusToBroker();
 void pingBroker();
