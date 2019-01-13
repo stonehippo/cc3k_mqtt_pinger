@@ -23,7 +23,7 @@ There are a couple of files that you'll need to create to build this firmware co
 
 ### wifi_config.h
 
-You'll need to put your WiFi connection info in `src/wifi_config.h`.
+You'll need to put your WiFi connection info in `include/wifi_config.h`.
 
 ```
 #define WLAN_SSID       "...your SSID..."
@@ -33,11 +33,11 @@ You'll need to put your WiFi connection info in `src/wifi_config.h`.
 ```
 
 
-An example version can be found in [src/example_wifi_config.h](src/example_wifi_config.h)
+An example version can be found in [include/example_wifi_config.h](include/example_wifi_config.h)
 
 ### mqtt_config.h
 
-You'll need to put your MQTT broker URL, access key, and topic into `src/mqtt_config.h`. You can also override the default client name and ping interval.
+You'll need to put your MQTT broker URL, access key, and topic into `include/mqtt_config.h`. You can also override the default client name and ping interval.
 
 ```
 #define MQTT_BROKER "broker.shiftr.io"
@@ -52,7 +52,7 @@ You'll need to put your MQTT broker URL, access key, and topic into `src/mqtt_co
 #define MQTT_PING_INTERVAL 60000L
 ```
 
-An example version can be found in [src/example_mqtt_config.h](src/example_mqtt_config.h)
+An example version can be found in [include/example_mqtt_config.h](include/example_mqtt_config.h)
 
 ## Developer's Notes
 
