@@ -123,13 +123,13 @@ void sendStatusToBroker(String payload) {
 
 void pingBroker() {
   int value = readSensor();
-  String payload = "{'value': ";
+  String payload = "{\"value\": ";
   payload += value;
-  payload += ", 'lat': ";
+  payload += ", \"lat\": ";
   payload += lat;
-  payload += ", 'lon': ";
+  payload += ", \"lon\": ";
   payload += lon;
-  payload += ", 'ele': 0";
+  payload += ", \"ele\": 0";
   payload += "}";
   client.publish(MQTT_TOPIC, payload);
 }
