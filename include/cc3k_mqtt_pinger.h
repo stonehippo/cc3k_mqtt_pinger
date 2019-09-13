@@ -10,5 +10,6 @@ void connectToBroker();
 void sendStatusToBroker(String payload);
 void pingBroker();
 int readSensor();
+void httpGet();
 void getGateway();
 void getGeolocation();

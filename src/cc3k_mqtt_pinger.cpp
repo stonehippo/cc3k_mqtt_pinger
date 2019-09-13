@@ -28,6 +28,15 @@ MQTTClient client;
 #define SENSOR_PIN A0
 #endif
 
+// IP address and geolocation providers
+#ifndef IP_LOOKUP_PROVIDER
+#define IP_LOOKUP_PROVIDER "http://api.ipify.org"
+#endif
+
+#ifndef GEO_LOOKUP_PROVIDER
+#define GEO_LOOKUP_PROVIDER "http://ip-api.com"
+#endif
+
 // some helper functions for output
 #define out(m) { Serial.print(m); }
 #define message(m) { Serial.println(m); }
@@ -36,7 +45,7 @@ MQTTClient client;
 long timerInterval = 0;
 float lat = 0;
 float lon = 0;
-uint32_t gateway = 0L;
+uint32_t publicIP = 0L;
 
 void setup() {
   Serial.begin(115200);
@@ -129,15 +138,20 @@ int readSensor() {
   return analogRead(SENSOR_PIN);
 }
 
-void getGateway() {
-  uint32_t ipAddress, netmask, dhcpserv, dnsserv;
-  if (cc3k.getIpAddress(&ipAddress, &netmask, &gateway, &dhcpserv, &dnsserv)) {
-    message("Using gateway ");
-    cc3k.printIPdotsRev(gateway);
-    getGeolocation();
-  } else {
-    message("Could not get gateway, skipping geolocation lookup...");
+void httpGet(String host, String request) {
+/*
+  uint32_t ip = 0L;
+  while( ip == 0L) {
+    if (!cc3k.getHostByName(host, &ip)) {
+      message("Failed while resolving host ");
+      halt(host);
+    }
   }
+*/
+}
+
+void getGateway() {
+  
 }
 
 void getGeolocation() {
