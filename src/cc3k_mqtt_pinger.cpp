@@ -23,13 +23,20 @@ MQTTClient client;
 #define MQTT_PING_INTERVAL 5000L
 #endif
 
+// pin to read sensor data from
+#ifndef SENSOR_PIN
+#define SENSOR_PIN A0
+#endif
+
+// some helper functions for output
 #define out(m) { Serial.print(m); }
 #define message(m) { Serial.println(m); }
 #define halt(err) { message(err); while(1); }
 
 long timerInterval = 0;
-
-uint32_t incrementer = 0;
+float lat = 0;
+float lon = 0;
+uint32_t gateway = 0L;
 
 void setup() {
   Serial.begin(115200);
@@ -87,6 +94,8 @@ void wifiConnect() {
     message(F("DHCP not set. Retrying..."));
     delay(100);
   }
+  
+  getGateway();
 
   message(F("Wifi setup complete"));
 }
@@ -104,9 +113,32 @@ void sendStatusToBroker(String payload) {
 }
 
 void pingBroker() {
-  incrementer = incrementer + 1;
-  String payload = "{'ping':'pong!', 'count':";
-  payload += incrementer;
+  int value = readSensor();
+  String payload = "{'value': ";
+  payload += value;
+  payload += ", 'lat': ";
+  payload += lat;
+  payload += ", 'lon': ";
+  payload += lon;
+  payload += ", 'ele': 0";
   payload += "}";
   client.publish(MQTT_TOPIC, payload);
+}
+
+int readSensor() {
+  return analogRead(SENSOR_PIN);
+}
+
+void getGateway() {
+  uint32_t ipAddress, netmask, dhcpserv, dnsserv;
+  if (cc3k.getIpAddress(&ipAddress, &netmask, &gateway, &dhcpserv, &dnsserv)) {
+    message("Using gateway ");
+    cc3k.printIPdotsRev(gateway);
+    getGeolocation();
+  } else {
+    message("Could not get gateway, skipping geolocation lookup...");
+  }
+}
+
+void getGeolocation() {
 }
