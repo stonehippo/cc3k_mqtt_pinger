@@ -50,6 +50,10 @@ MQTTClient client;
 #define httpHostHeader(hostname) { httpRequestPart("Host: "); httpRequestPart(hostname); httpNewline(); }
 #define httpEndRequest() { httpNewline(); }
 
+#ifndef HTTP_TIMEOUT
+#define HTTP_TIMEOUT 1500
+#endif
+
 long timerInterval = 0;
 float lat = 0;
 float lon = 0;
@@ -58,7 +62,13 @@ uint32_t publicIP = 0L;
 void setup() {
   Serial.begin(115200);
   wifiConnect();
-  getGateway();
+  char response[40];
+  response[0] = 0;
+  getGateway(response);
+  message(response);
+  response[0] = 0;
+  getGeolocation("76.119.236.19", response); 
+  message(response);
   client.begin(MQTT_BROKER, conn);
   connectToBroker();
   sendStatusToBroker("{'status': 'connected to broker'}");
@@ -145,14 +155,21 @@ int readSensor() {
   return analogRead(SENSOR_PIN);
 }
 
-void httpGet(const char *host, const char *request) {
+void httpGet(const char *host, const char *request, char *response) {
   uint32_t ip = 0L;
+  boolean objectFound = false;
   while( ip == 0L) {
     if (!cc3k.getHostByName(host, &ip)) {
-      message("Failed while resolving host ");
+      message(F("Failed while resolving host "));
       halt(host);
     }
   }
+  
+  out(F("IP for host "));
+  out(host);
+  out(F(": "));
+  cc3k.printIPdotsRev(ip);
+  message(F("\n"));
   
   Adafruit_CC3000_Client http = cc3k.connectTCP(ip, 80);
   if (http.connected()) {
@@ -162,24 +179,39 @@ void httpGet(const char *host, const char *request) {
     httpHostHeader(host);
     httpEndRequest();
     
-    while(http.connected() && http.available()) {
-      char c = http.read();
-      out(c);
+    unsigned long last = millis();
+    while(http.connected() && (millis() - last < HTTP_TIMEOUT)) {
+      while (http.available()) {
+        char c = http.read();
+        if (c == '{') {
+          objectFound = true;
+        }
+        if (objectFound) {
+          const char in[] = {c, '\0'};
+          strcat(response, in); 
+        }
+        last = millis();
+      }
     }
   } else {
-    message("Failed to connect to HTTP host ");
+    message(F("Failed to connect to HTTP host "));
     halt(host);
   }
-  message("\nrequest complete");
+  message(F("\nrequest complete"));
   http.close();
-  cc3k.disconnect();
 }
 
 // get the IP address of the public Internet interface
-void getGateway() {
-  httpGet(IP_LOOKUP_PROVIDER, "/");
+void getGateway(char *response) {
+  httpGet(IP_LOOKUP_PROVIDER, "/?format=json", response);
 }
 
 // using the public IP address, attempt to look up the geolocation of the device
-void getGeolocation() {
+// restrict the returned fields to the data we need (latitude and longitude only),
+// which cuts down on the data we have to parse
+void getGeolocation(const char *ipAddress, char *response) {
+  String query = "/json/";
+  query += ipAddress;
+  query += "?fields=lat,lon";
+  httpGet(GEO_LOOKUP_PROVIDER, query.c_str(), response);
 }
