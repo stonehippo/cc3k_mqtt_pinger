@@ -62,13 +62,14 @@ uint32_t publicIP = 0L;
 void setup() {
   Serial.begin(115200);
   wifiConnect();
-  char response[40];
-  response[0] = 0;
-  getGateway(response);
-  message(response);
-  response[0] = 0;
-  getGeolocation("76.119.236.19", response); 
-  message(response);
+  char ipAddr[40];
+  char geo[40];
+  ipAddr[0] = 0;
+  geo[0] = 0;
+  getGateway(ipAddr);
+  message(ipAddr);
+  getGeolocation(ipAddr, geo); 
+  message(geo);
   client.begin(MQTT_BROKER, conn);
   connectToBroker();
   sendStatusToBroker("{'status': 'connected to broker'}");
@@ -203,14 +204,14 @@ void httpGet(const char *host, const char *request, char *response) {
 
 // get the IP address of the public Internet interface
 void getGateway(char *response) {
-  httpGet(IP_LOOKUP_PROVIDER, "/?format=json", response);
+  httpGet(IP_LOOKUP_PROVIDER, "", response);
 }
 
 // using the public IP address, attempt to look up the geolocation of the device
 // restrict the returned fields to the data we need (latitude and longitude only),
 // which cuts down on the data we have to parse
 void getGeolocation(const char *ipAddress, char *response) {
-  String query = "/json/";
+  String query = "/csv/";
   query += ipAddress;
   query += "?fields=lat,lon";
   httpGet(GEO_LOOKUP_PROVIDER, query.c_str(), response);
