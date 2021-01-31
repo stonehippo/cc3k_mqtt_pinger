@@ -11,5 +11,4 @@ void sendStatusToBroker(String payload);
 void pingBroker();
 int readSensor();
 void httpGet(const char *host, const char *request, char *response);
-void getGateway(char *response);
-void getGeolocation(const char *ipAddress, char *response);
+void getGeolocation(char *response);
