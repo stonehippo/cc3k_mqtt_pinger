@@ -174,8 +174,9 @@ void httpGet(const char *host, const char *request, char *response) {
     while(http.connected() && (millis() - last < HTTP_TIMEOUT)) {
       while (http.available()) {
         char c = http.read();
-        const char in[] = {c, '\0'};
-        strcat(response, in); 
+        out(c);
+        // const char in[] = {c, '\0'};
+        // strcat(response, in); 
         last = millis();
       }
     }
