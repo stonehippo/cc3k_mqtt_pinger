@@ -28,11 +28,7 @@ MQTTClient client;
 #define SENSOR_PIN A0
 #endif
 
-// IP address and geolocation providers
-#ifndef IP_LOOKUP_PROVIDER
-#define IP_LOOKUP_PROVIDER "api.ipify.org"
-#endif
-
+// IP geolocation providers
 #ifndef GEO_LOOKUP_PROVIDER
 #define GEO_LOOKUP_PROVIDER "ip-api.com"
 #endif
@@ -57,18 +53,13 @@ MQTTClient client;
 long timerInterval = 0;
 float lat = 0;
 float lon = 0;
-uint32_t publicIP = 0L;
 
 void setup() {
   Serial.begin(115200);
   wifiConnect();
-  char ipAddr[40];
   char geo[40];
-  ipAddr[0] = 0;
   geo[0] = 0;
-  getGateway(ipAddr);
-  message(ipAddr);
-  getGeolocation(ipAddr, geo); 
+  getGeolocation(geo); 
   message(geo);
   client.begin(MQTT_BROKER, conn);
   connectToBroker();
@@ -158,7 +149,6 @@ int readSensor() {
 
 void httpGet(const char *host, const char *request, char *response) {
   uint32_t ip = 0L;
-  boolean objectFound = false;
   while( ip == 0L) {
     if (!cc3k.getHostByName(host, &ip)) {
       message(F("Failed while resolving host "));
@@ -184,13 +174,8 @@ void httpGet(const char *host, const char *request, char *response) {
     while(http.connected() && (millis() - last < HTTP_TIMEOUT)) {
       while (http.available()) {
         char c = http.read();
-        if (c == '{') {
-          objectFound = true;
-        }
-        if (objectFound) {
-          const char in[] = {c, '\0'};
-          strcat(response, in); 
-        }
+        const char in[] = {c, '\0'};
+        strcat(response, in); 
         last = millis();
       }
     }
@@ -202,17 +187,11 @@ void httpGet(const char *host, const char *request, char *response) {
   http.close();
 }
 
-// get the IP address of the public Internet interface
-void getGateway(char *response) {
-  httpGet(IP_LOOKUP_PROVIDER, "", response);
-}
-
-// using the public IP address, attempt to look up the geolocation of the device
+// attempt to look up the geolocation of the device, based on the public IP
 // restrict the returned fields to the data we need (latitude and longitude only),
 // which cuts down on the data we have to parse
-void getGeolocation(const char *ipAddress, char *response) {
+void getGeolocation(char *response) {
   String query = "/csv/";
-  query += ipAddress;
   query += "?fields=lat,lon";
   httpGet(GEO_LOOKUP_PROVIDER, query.c_str(), response);
 }
