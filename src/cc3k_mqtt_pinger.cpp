@@ -47,7 +47,7 @@ MQTTClient client;
 #define httpEndRequest() { httpNewline(); }
 
 #ifndef HTTP_TIMEOUT
-#define HTTP_TIMEOUT 1500
+#define HTTP_TIMEOUT 10000
 #endif
 
 long timerInterval = 0;
@@ -59,8 +59,12 @@ void setup() {
   wifiConnect();
   char geo[40];
   geo[0] = 0;
-  getGeolocation(geo); 
+  getGeolocation(geo);
+  out(F("Geolocation: "));
   message(geo);
+  out(lat);
+  out(F(","));
+  message(lon);
   client.begin(MQTT_BROKER, conn);
   connectToBroker();
   sendStatusToBroker("{'status': 'connected to broker'}");
@@ -163,6 +167,7 @@ void httpGet(const char *host, const char *request, char *response) {
   message(F("\n"));
   
   Adafruit_CC3000_Client http = cc3k.connectTCP(ip, 80);
+  http.setTimeout(HTTP_TIMEOUT);
   if (http.connected()) {
     httpGetMethod();
     httpRequestPart(request);
@@ -170,15 +175,27 @@ void httpGet(const char *host, const char *request, char *response) {
     httpHostHeader(host);
     httpEndRequest();
     
-    unsigned long last = millis();
-    while(http.connected() && (millis() - last < HTTP_TIMEOUT)) {
-      while (http.available()) {
-        char c = http.read();
-        out(c);
-        // const char in[] = {c, '\0'};
-        // strcat(response, in); 
-        last = millis();
+    // parse the http response
+    while(http.available()) {
+      if(!http.find("HTTP/1.1")) {
+        halt(F("Did not get a valid HTTP response"));
       }
+      
+      int status = http.parseInt();
+      if (status != 200) {
+        out(F("HTTP error, got response "));
+        halt(status);
+      } else {
+        message(F("Got HTTP 200 response"));
+      }
+      
+      if(!http.find("\r\n\r\n")) {
+        halt(F("could not find HTTP response body"));
+      } else {
+        message(F("Processing response body"));
+      }
+      
+      http.readBytes(response, 40);
     }
   } else {
     message(F("Failed to connect to HTTP host "));
