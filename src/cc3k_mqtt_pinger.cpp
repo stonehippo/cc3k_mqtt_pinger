@@ -58,10 +58,10 @@ void setup() {
   Serial.begin(115200);
   wifiConnect();
   char geo[40];
-  geo[0] = 0;
+  geo[0] = '\0';
   getGeolocation(geo);
   
-  char 	toss[2]; // throwaway for the delimiter
+  char toss[1]; // throwaway for the delimiter
   sscanf(geo, "%[^,]%[,]%s", lat, toss, lon);
   
   out(F("Geolocation: "));
@@ -207,7 +207,8 @@ void httpGet(const char *host, const char *request, char *response) {
           message(F("Processing response body"));
         }
         
-        http.readBytesUntil('\n', response, response_length);
+        http.readBytes(response, response_length);
+        response[response_length] = '\0';
         http.close();
       }
     }
