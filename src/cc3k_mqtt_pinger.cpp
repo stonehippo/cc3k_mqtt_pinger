@@ -176,26 +176,37 @@ void httpGet(const char *host, const char *request, char *response) {
     httpEndRequest();
     
     // parse the http response
-    while(http.available()) {
-      if(!http.find("HTTP/1.1")) {
-        halt(F("Did not get a valid HTTP response"));
+    while(http.connected()) {
+      while(http.available()) {
+        if(!http.find("HTTP/1.1 ")) {
+          halt(F("Did not get a valid HTTP response"));
+        } else {
+          message(F("HTTP 1.1 response"));
+        }
+        
+        int status = http.parseInt();
+        if (status != 200) {
+          out(F("HTTP error, got response "));
+          halt(status);
+        } else {
+          message(F("HTTP response was 200 OK"));
+        }
+        
+        if(!http.find("Content-Length: ")) {
+          halt(F("could not determine content length"));
+        }
+        
+        int response_length = http.parseInt();
+        
+        if(!http.find("\r\n\r\n")) {
+          halt(F("could not find HTTP response body"));
+        } else {
+          message(F("Processing response body"));
+        }
+        
+        http.readBytesUntil('\n', response, response_length);
+        http.close();
       }
-      
-      int status = http.parseInt();
-      if (status != 200) {
-        out(F("HTTP error, got response "));
-        halt(status);
-      } else {
-        message(F("Got HTTP 200 response"));
-      }
-      
-      if(!http.find("\r\n\r\n")) {
-        halt(F("could not find HTTP response body"));
-      } else {
-        message(F("Processing response body"));
-      }
-      
-      http.readBytes(response, 40);
     }
   } else {
     message(F("Failed to connect to HTTP host "));
