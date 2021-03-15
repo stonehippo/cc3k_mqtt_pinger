@@ -51,8 +51,8 @@ MQTTClient client;
 #endif
 
 long timerInterval = 0;
-float lat = 0;
-float lon = 0;
+char lat[10];
+char lon[10];
 
 void setup() {
   Serial.begin(115200);
@@ -60,8 +60,11 @@ void setup() {
   char geo[40];
   geo[0] = 0;
   getGeolocation(geo);
+  
+  char 	toss[2]; // throwaway for the delimiter
+  sscanf(geo, "%[^,]%[,]%s", lat, toss, lon);
+  
   out(F("Geolocation: "));
-  message(geo);
   out(lat);
   out(F(","));
   message(lon);
