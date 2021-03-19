@@ -53,6 +53,7 @@ MQTTClient client;
 long timerInterval = 0;
 char lat[10];
 char lon[10];
+bool wasWifiDisconnected = false;
 
 void setup() {
   Serial.begin(115200);
@@ -91,7 +92,7 @@ void loop() {
       connectToBroker();
       if (wasWifiDisconnected) {
         sendStatusToBroker("{'status: 'reconnected to wifi'}");
-        bool wasWifiDisconnected = false;
+        wasWifiDisconnected = false;
       }
       sendStatusToBroker("{'status': 'reconnected to broker'}");
     } else {
