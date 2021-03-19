@@ -74,7 +74,6 @@ void setup() {
 }
 
 void loop() {
-  bool wasWifiDisconnected = false;
   client.loop();
   // ping once per interval defined in config, using a non-blocking timer
   if (timerInterval == 0) {
@@ -92,6 +91,7 @@ void loop() {
       connectToBroker();
       if (wasWifiDisconnected) {
         sendStatusToBroker("{'status: 'reconnected to wifi'}");
+        bool wasWifiDisconnected = false;
       }
       sendStatusToBroker("{'status': 'reconnected to broker'}");
     } else {
@@ -148,6 +148,8 @@ void pingBroker() {
   payload += ", \"ele\": 0";
   payload += "}";
   client.publish(MQTT_TOPIC, payload);
+  out("Sent payload: ");
+  message(payload);
 }
 
 int readSensor() {
