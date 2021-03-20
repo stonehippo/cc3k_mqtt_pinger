@@ -99,10 +99,13 @@ void loop() {
   if (isTimerExpired(timerInterval, MQTT_PING_INTERVAL)) {
     clearTimer(timerInterval); // reset for the next interval
     if (!cc3k.checkConnected()) {
-      client.disconnect();
       message(F("CC3000 is not connected"));
-      wifiConnect();
-      wasWifiDisconnected = true;
+      client.disconnect(); // kill the current MQTT client
+      wasWifiDisconnected = true; // signal that we need to restart MQTT
+      cc3k.reboot(); // kick the CC3000, hoping to get it going again
+      wifiConnect(); // attempt to reconnect to the AP
+    } else {
+    	message(F("CC3000 still connected"));
     }
     if (!client.connected()) {
       connectToBroker();
