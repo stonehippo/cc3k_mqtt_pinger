@@ -1,4 +1,5 @@
 #include <MQTT.h>
+#include "debug_config.h"
 #include "cc3k_mqtt_pinger.h"
 #include "wifi_config.h"
 #include "mqtt_config.h"
@@ -12,7 +13,10 @@ Adafruit_CC3000 cc3k = Adafruit_CC3000(Adafruit_CC3000_CS, Adafruit_CC3000_IRQ, 
 Adafruit_CC3000_Client conn;
 MQTTClient client;
 
+// turn on additional debug via serial port
+// #ifndef MQTT_DEBUG
 // #define MQTT_DEBUG
+// #endif
 
 // set defaults for client name and ping interval
 #ifndef MQTT_CLIENT_NAME
@@ -22,6 +26,11 @@ MQTTClient client;
 #ifndef MQTT_PING_INTERVAL
 #define MQTT_PING_INTERVAL 5000L
 #endif
+
+// enable adding geolocation to MQTT payload
+// #ifndef ENABLE_GEO
+// #define ENABLE_GEO
+// #endif
 
 // pin to read sensor data from
 #ifndef SENSOR_PIN
@@ -50,6 +59,11 @@ MQTTClient client;
 #define HTTP_TIMEOUT 10000
 #endif
 
+// Oversampling for the ADC, 2 bits by default
+#ifndef OVERSAMPLE_BITS
+#define OVERSAMPLE_BITS	2
+#endif
+
 long timerInterval = 0;
 char lat[10];
 char lon[10];
@@ -58,6 +72,7 @@ bool wasWifiDisconnected = false;
 void setup() {
   Serial.begin(115200);
   wifiConnect();
+  #ifdef ENABLE_GEO
   char geo[40];
   geo[0] = '\0';
   getGeolocation(geo);
@@ -69,6 +84,7 @@ void setup() {
   out(lat);
   out(F(","));
   message(lon);
+  #endif
   client.begin(MQTT_BROKER, conn);
   connectToBroker();
   sendStatusToBroker("{'status': 'connected to broker'}");
@@ -142,15 +158,19 @@ void pingBroker() {
   int value = readSensor();
   String payload = "{\"value\": ";
   payload += value;
+  #ifdef ENABLE_GEO
   payload += ", \"lat\": ";
   payload += lat;
   payload += ", \"lon\": ";
   payload += lon;
   payload += ", \"ele\": 0";
+  #endif
   payload += "}";
   client.publish(MQTT_TOPIC, payload);
-  out("Sent payload: ");
+  #ifdef MQTT_DEBUG
+  out(F("Sent payload: "));
   message(payload);
+  #endif
 }
 
 int readSensor() {
