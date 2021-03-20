@@ -174,7 +174,41 @@ void pingBroker() {
 }
 
 int readSensor() {
-  return analogRead(SENSOR_PIN);
+  /*
+    Oversample the ADC
+    
+    The ADC is a 10-bit device, but we can get a higher precision via oversampling.
+    This lets us smooth out noise from the sensor, and for every 2^2^n samples we take,
+    then dividing by 2^n (dropping two bits), it increases the precision of the reading by n bits.
+    
+    For example, taking 4 10-bit samples (2^2^1) and partial averaging them gives a virtual 
+    11 bit result, and 16 samples (2^2^2) gives virtual 12 bit precision.
+    
+    The downside of oversampling is speed: because you're doing successive reads of the ADC,
+    it will be at least 1/n slower than a single read.
+    
+    Given that this firmware is meant to broadcast to an MQTT broker and data service that
+    is likely to rate limiting (for example, Adafruit IO restricts all incoming values from
+    a single account to .5Hz for the free tier, and 1Hz for the paid tier), paying the price
+    for the successive reads on the ADC is a fair tradeoff.
+  */
+  
+  uint16_t sum = 0;
+  byte oversampleCount = 1 << (OVERSAMPLE_BITS * 2); // 2^2^n!
+  uint16_t readBuffer[oversampleCount];  
+  
+  for (byte i = 0; i < oversampleCount; i++) {
+  	readBuffer[i] = analogRead(SENSOR_PIN);
+  	#ifdef MQTT_DEBUG
+  	out(F("Sample "));
+  	out(i);
+  	out(F(":"));
+  	message(readBuffer[i]);
+  	#endif
+  	sum += readBuffer[i];
+  }
+    
+  return sum/(1 << OVERSAMPLE_BITS); //
 }
 
 void httpGet(const char *host, const char *request, char *response) {
