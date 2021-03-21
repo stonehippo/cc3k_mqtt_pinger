@@ -156,7 +156,7 @@ void connectToBroker() {
   message("Connected to MQTT broker!");
 }
 
-void sendStatusToBroker(String payload) {
+void sendPayload(String payload) {
   client.publish(MQTT_TOPIC, payload);
 }
 
