@@ -86,7 +86,7 @@ void setup() {
   #endif
   client.begin(MQTT_BROKER, conn);
   connectToBroker();
-  sendStatusToBroker("{'status': 'connected to broker'}");
+  sendPayload("{'status': 'connected to broker'}");
 }
 
 void loop() {
@@ -116,7 +116,7 @@ void loop() {
       cc3k.reboot(); // kick the CC3000, hoping to get it going again
       wifiConnect(); // attempt to reconnect to the AP      
       connectToBroker(); // reconnect with the MQTT broker
-      sendStatusToBroker("{'status': 'reconnected to broker'}");
+      sendPayload("{'status': 'reconnected to broker'}");
     } else {
       pingBroker();
     }
@@ -172,7 +172,7 @@ void pingBroker() {
   payload += ", \"ele\": 0";
   #endif
   payload += "}";
-  client.publish(MQTT_TOPIC, payload);
+  sendPayload(payload);
   #ifdef MQTT_DEBUG
   out(F("Sent payload: "));
   message(payload);

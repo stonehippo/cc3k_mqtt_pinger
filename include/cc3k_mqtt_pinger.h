@@ -7,7 +7,7 @@
 
 void wifiConnect();
 void connectToBroker();
-void sendStatusToBroker(String payload);
+void sendPayload(String payload);
 void pingBroker();
 int readSensor();
 void httpGet(const char *host, const char *request, char *response);
