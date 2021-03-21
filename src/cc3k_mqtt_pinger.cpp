@@ -113,6 +113,7 @@ void loop() {
       stack before trying the MQTT broker again.
     */
     if (!client.connected()) {
+      message(F("Disconnected from broker, trying reconnect"));
       cc3k.reboot(); // kick the CC3000, hoping to get it going again
       wifiConnect(); // attempt to reconnect to the AP      
       connectToBroker(); // reconnect with the MQTT broker
