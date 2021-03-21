@@ -67,7 +67,6 @@ MQTTClient client;
 long timerInterval = 0;
 char lat[10];
 char lon[10];
-bool wasWifiDisconnected = false;
 
 void setup() {
   Serial.begin(115200);
@@ -98,21 +97,25 @@ void loop() {
   }
   if (isTimerExpired(timerInterval, MQTT_PING_INTERVAL)) {
     clearTimer(timerInterval); // reset for the next interval
-    if (!cc3k.checkConnected()) {
-      message(F("CC3000 is not connected"));
-      client.disconnect(); // kill the current MQTT client
-      wasWifiDisconnected = true; // signal that we need to restart MQTT
-      cc3k.reboot(); // kick the CC3000, hoping to get it going again
-      wifiConnect(); // attempt to reconnect to the AP
-    } else {
-    	message(F("CC3000 still connected"));
-    }
+    /*
+      Attempt to reconnect
+      
+      previously, this firmware checked to see if the CC3000 was 
+      still connected first. However, it appears that there's a
+      possible bug in the library. After running for several hours
+      the device is not longer able to connect to the broker, and
+      begins trying to reconnect. However the logic that was supposed
+      to detect disconnection from Wifi never gets triggered.
+      
+      To hack around this, if the broker connection breaks, this code
+      assumes that it's CC3000 connection with the AP as the root
+      cause, and tries to resolve it by restarting the network
+      stack before trying the MQTT broker again.
+    */
     if (!client.connected()) {
-      connectToBroker();
-      if (wasWifiDisconnected) {
-        sendStatusToBroker("{'status: 'reconnected to wifi'}");
-        wasWifiDisconnected = false;
-      }
+      cc3k.reboot(); // kick the CC3000, hoping to get it going again
+      wifiConnect(); // attempt to reconnect to the AP      
+      connectToBroker(); // reconnect with the MQTT broker
       sendStatusToBroker("{'status': 'reconnected to broker'}");
     } else {
       pingBroker();
