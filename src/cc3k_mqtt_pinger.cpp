@@ -111,12 +111,20 @@ void loop() {
       assumes that it's CC3000 connection with the AP as the root
       cause, and tries to resolve it by restarting the network
       stack before trying the MQTT broker again.
+      
+      After some live tests, this approach works well, but is not
+      foolproof. I found that at one point, the reconnetion to the
+      AP seems to have been made, but would could not connect to the
+      broker, perhaps because the CC3000 wasn't fully ready. Adding
+      a little delay between the reconnect to the AP and the connection
+      to the broker may help.
     */
     if (!client.connected()) {
       message(F("Disconnected from broker, trying reconnect"));
       cc3k.reboot(); // kick the CC3000, hoping to get it going again
       wifiConnect(); // attempt to reconnect to the AP      
       connectToBroker(); // reconnect with the MQTT broker
+      delay(5000); // give the CC3000 some time to settle down
       sendPayload("{'status': 'reconnected to broker'}");
     } else {
       pingBroker();
